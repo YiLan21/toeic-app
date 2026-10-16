@@ -226,9 +226,10 @@ section.block.chap{border-left:4px solid var(--accent);border-radius:16px}
 .ex .z{color:var(--muted)}
 .ex .n{color:var(--muted);font-size:13.5px;margin-top:2px}
 .rootgrp{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:10px 0}
-.roothead{display:flex;align-items:baseline;gap:8px;padding:8px 12px;background:var(--accent-soft)}
+.roothead{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 12px;background:var(--accent-soft)}
 .rootw{font-size:19px;color:var(--accent)}
 .rootz{font-weight:700}
+.roothead .linkbtn{margin-left:auto;background:var(--surface)}
 .rootrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:8px 12px;border-top:1px solid var(--line);align-items:center}
 .rootrow .rw{font-size:17px}
 .rootrow .rs{grid-column:1;font-size:13.5px;color:var(--muted)}
@@ -1845,27 +1846,27 @@ function renderRoots(){
   const q = affixQ.trim().toLowerCase();
   const hit = t => !q || String(t).toLowerCase().includes(q);
   let count = 0;
-  const groups = [ROOTS[ROOTS.length - 1], ...ROOTS.slice(0, -1)].map(([root, zh, words]) => {
+  const groups = [ROOTS.length - 1, ...ROOTS.slice(0, -1).map((_, i) => i)].map(gi => { const [root, zh, words] = ROOTS[gi];
     const whole = q && (hit(root) || hit(zh));
     const list = words.filter(w => !q || whole || w.some(hit));
     if (!list.length) return "";
     count += list.length;
     return `
     <div class="rootgrp">
-      <div class="roothead"><span class="rootw en">${esc(root)}</span><span class="rootz">＝ ${esc(zh)}</span></div>
+      <div class="roothead"><span class="rootw en">${esc(root)}</span><span class="rootz">＝ ${esc(zh)}</span><button class="linkbtn" type="button" data-gq="m${gi}">小測驗</button></div>
       <div class="rootlist">${list.map(([w, split, m]) => `
         <div class="rootrow"><span class="rw en">${esc(w)}</span><span class="rs">${esc(split)}</span><span class="rm">${esc(m)}</span>${TTS ? `<button class="say" type="button" data-say="${esc(w)}">發音</button>` : ""}</div>`).join("")}
       </div>
     </div>`;
   }).join("");
-  const pgroups = PREFIXES.map(([pre, zh, words]) => {
+  const pgroups = PREFIXES.map(([pre, zh, words], gi) => {
     const whole = q && (hit(pre) || hit(zh));
     const list = words.filter(w => !q || whole || w.some(hit));
     if (!list.length) return "";
     count += list.length;
     return `
     <div class="rootgrp">
-      <div class="roothead"><span class="rootw en">${esc(pre)}</span><span class="rootz">＝ ${esc(zh)}</span></div>
+      <div class="roothead"><span class="rootw en">${esc(pre)}</span><span class="rootz">＝ ${esc(zh)}</span><button class="linkbtn" type="button" data-gq="n${gi}">小測驗</button></div>
       <div class="rootlist">${list.map(([w, m]) => `
         <div class="rootrow"><span class="rw en">${esc(w)}</span><span class="rm">${esc(m)}</span>${TTS ? `<button class="say" type="button" data-say="${esc(w)}">發音</button>` : ""}</div>`).join("")}
       </div>
@@ -1873,6 +1874,9 @@ function renderRoots(){
   }).join("");
   box.innerHTML = groups || `<p class="lead">字根裡沒有符合「${esc(affixQ)}」的字。</p>`;
   pbox.innerHTML = pgroups || `<p class="lead">字首裡沒有符合「${esc(affixQ)}」的字。</p>`;
+  [box, pbox].forEach(el => el.querySelectorAll("[data-gq]").forEach(b => b.addEventListener("click", () => {
+    affixGroup = [b.dataset.gq[0], +b.dataset.gq.slice(1)]; go("quiz"); start("affixgroup");
+  })));
   info.textContent = q ? `找到 ${count} 個和「${affixQ}」有關的字` : `共 ${ROOTS.reduce((s, g) => s + g[2].length, 0)} 個字根單字、${PREFIXES.reduce((s, g) => s + g[2].length, 0)} 個字首單字`;
   document.querySelectorAll("#tab-affix [data-static]").forEach(el => el.hidden = !!q);
   box.closest("section").hidden = !!q && !groups;
@@ -1955,8 +1959,35 @@ function showBest(){
 showBest();
 
 /* item factory: id = "r12" grammar, "v5" vocab, "l3" listening */
+/* 字根／字首卡片小測驗：m 字根、n 字首；id 例：m1x2e（第 1 組第 2 字，英翻中），z 為中翻英 */
+function affixWord(id){
+  const m = /^([mn])(\d+)x(\d+)([ez])$/.exec(id);
+  if (!m) return null;
+  const G = m[1] === "m" ? ROOTS : PREFIXES, g = G[+m[2]];
+  if (!g || !g[2][+m[3]]) return null;
+  const list = g[2].map(w => m[1] === "m" ? { w: w[0], split: w[1], zh: w[2] } : { w: w[0], split: "", zh: w[1] });
+  return { kind: m[1], gi: +m[2], wi: +m[3], dir: m[4], head: g[0], headZh: g[1], list, cur: list[+m[3]] };
+}
+function makeAffixWordQ(id){
+  const a = affixWord(id);
+  if (!a) return null;
+  const all = shuffle([a.cur, ...shuffle(a.list.filter(x => x !== a.cur)).slice(0, 3)]);
+  const label = `${a.kind === "m" ? "字根" : "字首"} ${a.head}（${a.headZh}）`;
+  const ex = `${a.cur.w} ＝ ${a.cur.zh}${a.cur.split ? `。拆解：${a.cur.split}` : ""}`;
+  if (a.dir === "e") return { id, type:`${label} · 英翻中`, stem: a.cur.w, opts: all.map(x => x.zh), otr: all.map(x => x.w), otrEn:true, ans: all.indexOf(a.cur), ex, zh:true };
+  return { id, type:`${label} · 中翻英`, stem: a.cur.zh, opts: all.map(x => x.w), otr: all.map(x => x.zh), ans: all.indexOf(a.cur), ex, zhq:true };
+}
+let affixGroup = null;
+function buildAffixGroup(){
+  if (!affixGroup) return [];
+  const [k, gi] = affixGroup, n = (k === "m" ? ROOTS : PREFIXES)[gi][2].length;
+  const qs = [];
+  for (let i = 0; i < n; i++) qs.push(`${k}${gi}x${i}e`, `${k}${gi}x${i}z`);
+  return shuffle(qs).map(makeItem).filter(Boolean);
+}
 function makeItem(id){
   const t = id[0], n = +id.slice(1);
+  if (t === "m" || t === "n") return makeAffixWordQ(id);
   if (t === "o" || t === "s") return makeSentence(id);
   if (t === "k" || t === "d" || t === "c") return makeExtra(id);
   if (t === "b") return makeBig(id);
@@ -2032,7 +2063,7 @@ function bindStars(root){
 }
 
 function start(kind){
-  const B = { read: buildReading, listen: buildListeningNew, prep: buildPrep, affix: buildAffix, word: buildWord, sent: buildSent, part7: buildPart7, colloc: buildColloc, wrong: buildWrongBook, saved: buildSaved };
+  const B = { read: buildReading, listen: buildListeningNew, prep: buildPrep, affix: buildAffix, word: buildWord, sent: buildSent, part7: buildPart7, colloc: buildColloc, wrong: buildWrongBook, saved: buildSaved, affixgroup: buildAffixGroup };
   const items = (B[kind] || buildSaved)();
   if (!items.length) return;
   clearQTimer();
@@ -2188,7 +2219,7 @@ function result(){
   const msg = Q.score >= 9 ? "很穩，保持這個手感。" : Q.score >= 7 ? "不錯，看一下錯的題目就好。" : Q.score >= 5 ? "及格邊緣，錯題的觀念回文法頁再看一次。" : "沒關係，先看下面的解析，再做一輪。";
   $("#quiz-run").innerHTML = `
     <div class="qcard result">
-      <div class="eyebrow">${{read:"閱讀",listen:"聽力",prep:"介系詞",affix:"字首字尾",word:"單字",sent:"句子",part7:"Part 7 閱讀",colloc:"搭配詞",wrong:"錯題本",saved:"精選"}[Q.kind]} · 本輪成績</div>
+      <div class="eyebrow">${{read:"閱讀",listen:"聽力",prep:"介系詞",affix:"字首字尾",word:"單字",sent:"句子",part7:"Part 7 閱讀",colloc:"搭配詞",wrong:"錯題本",saved:"精選",affixgroup: affixGroup ? `${affixGroup[0] === "m" ? "字根" : "字首"} ${(affixGroup[0] === "m" ? ROOTS : PREFIXES)[affixGroup[1]][0]}` : "字首字尾"}[Q.kind]} · 本輪成績</div>
       <div class="score">${Q.score}<span style="font-size:24px;color:var(--muted)"> / ${total}</span></div>
       <p>${msg}</p>
       <div class="btnrow" style="justify-content:center">
@@ -2206,7 +2237,7 @@ function result(){
       </div>`).join("")}</div>` : ""}`;
   const kind = Q.kind;
   bindStars($("#quiz-run"));
-  $("#again").textContent = kind === "saved" ? "再考一次精選" : kind === "wrong" ? "再練一次錯題本" : kind === "part7" ? "再抽 3 篇" : "再抽 10 題";
+  $("#again").textContent = kind === "saved" ? "再考一次精選" : kind === "wrong" ? "再練一次錯題本" : kind === "part7" ? "再抽 3 篇" : kind === "affixgroup" ? "這組再做一次" : "再抽 10 題";
   $("#again").addEventListener("click", () => {
     if (kind === "saved" && !getSaved().length) return review("saved");
     if (kind === "wrong" && !getWrong().length) return review("wrong");
@@ -2219,6 +2250,7 @@ function result(){
 function savedEntry(id){
   const t = id[0], n = +id.slice(1);
   if (t === "k" || t === "d" || t === "c") return savedExtra(id);
+  if (t === "m" || t === "n") { const a = affixWord(id); return { cat:"read", type:`${a.kind === "m" ? "字根" : "字首"} ${a.head}`, stem: a.dir === "e" ? a.cur.w : a.cur.zh, ans: a.dir === "e" ? a.cur.zh : a.cur.w, ex: a.cur.split ? `拆解：${a.cur.split}` : "", say: a.cur.w, en: a.dir === "e" }; }
   if (t === "b") { const b = BIGV[n]; return { cat:"read", type:`單字 · ${LEVELS[b[3]]}`, stem: `${b[0]}（${b[1]}）`, ans: b[2], ex: "", say: b[0], en:true }; }
   if (t === "o" || t === "s") { const s = srcSentence(id.slice(1)); return { cat:"read", type: t === "o" ? "句子重組" : "選出正確句子", stem: s.tr, ans: fillBlank(s.stem, s.opts[s.ans]), ex: s.ex, en:false }; }
   if (t === "w") { const [vi, fi] = WORDQ[n], f = famOf(vi)[fi]; return { cat:"read", type:"單字", stem: `${f[0]}（${f[1]}）`, ans: f[2], ex: famOf(vi).map(x => `${x[0]} ${x[1]} ${x[2]}`).join("・"), say: f[0], en:true }; }
@@ -2315,6 +2347,7 @@ function pointOf(id){
   if (t === "r") return READ[n][3];
   if (t === "p") return PREP[n][3];
   if (t === "a") return AFFQ[n][3];
+  if (t === "m" || t === "n") { const a = affixWord(id); return `${a.cur.w} ＝ ${a.cur.zh}`; }
   const v = VOCAB[n]; return `${v[0]}（${v[1]}）＝ ${v[2]}${v[4] ? "。" + v[4] : ""}`;
 }
 const fmt = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; };

@@ -1,6 +1,6 @@
 /* 離線快取：App 本身先用網路拿最新版，沒網路就用快取；字型用快取優先。
    改版時把 VERSION 加 1。 */
-const VERSION = "v2";
+const VERSION = "v3";
 const CACHE = `toeic-${VERSION}`;
 const CORE = ["./", "index.html", "manifest.webmanifest", "icons/apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png"];
 
