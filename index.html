@@ -217,6 +217,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 /* chapter-style grammar */
 .pill{display:inline-block;font-weight:700;font-size:15px;background:var(--accent);color:var(--surface);border-radius:999px;padding:4px 14px;margin-bottom:10px}
 .pill.alt{background:var(--good)}
+.chaphead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+.chaphead .pill{margin-bottom:0}
+.chaphead .linkbtn{flex:none;padding:4px 14px;font-weight:700}
 section.block.chap{border-left:4px solid var(--accent);border-radius:16px}
 .exs{display:flex;flex-direction:column;gap:10px;margin-top:10px}
 .ex{background:var(--bg);border-left:4px solid var(--accent);border-radius:10px;padding:10px 14px}
@@ -1977,6 +1980,13 @@ function makeAffixWordQ(id){
   if (a.dir === "e") return { id, type:`${label} · 英翻中`, stem: a.cur.w, opts: all.map(x => x.zh), otr: all.map(x => x.w), otrEn:true, ans: all.indexOf(a.cur), ex, zh:true };
   return { id, type:`${label} · 中翻英`, stem: a.cur.zh, opts: all.map(x => x.w), otr: all.map(x => x.zh), ans: all.indexOf(a.cur), ex, zhq:true };
 }
+/* 文法章節卡片練習：每章對應的考點（RTAG 字母）或 READ 題號，順序同文法頁的章節卡片 */
+const GCHAP = [["基礎 · 五大句型", ["W"]], ["重點 1 · to V / Ving", ["V"]], ["重點 2 · 時態與主詞動詞一致", ["T","S"]], ["重點 3 · 連接詞 vs 介系詞", ["C"]], ["重點 4 · 詞性判斷", ["W"]], ["重點 5 · 代名詞與時間介系詞", [28, 29, 33, 5, 14, 19, 4]]];
+const inChap = (i, n) => GCHAP[i][1].some(x => typeof x === "number" ? x === n : RTAG[n] === x);
+let gchap = 0;
+function buildGrammarChap(){
+  return shuffle(ids("r", READ).filter((_, n) => inChap(gchap, n))).slice(0, 10).map(makeItem).filter(Boolean);
+}
 let affixGroup = null;
 function buildAffixGroup(){
   if (!affixGroup) return [];
@@ -2063,7 +2073,7 @@ function bindStars(root){
 }
 
 function start(kind){
-  const B = { read: buildReading, listen: buildListeningNew, prep: buildPrep, affix: buildAffix, word: buildWord, sent: buildSent, part7: buildPart7, colloc: buildColloc, wrong: buildWrongBook, saved: buildSaved, affixgroup: buildAffixGroup };
+  const B = { read: buildReading, listen: buildListeningNew, prep: buildPrep, affix: buildAffix, word: buildWord, sent: buildSent, part7: buildPart7, colloc: buildColloc, wrong: buildWrongBook, saved: buildSaved, affixgroup: buildAffixGroup, gchap: buildGrammarChap };
   const items = (B[kind] || buildSaved)();
   if (!items.length) return;
   clearQTimer();
@@ -2219,7 +2229,7 @@ function result(){
   const msg = Q.score >= 9 ? "很穩，保持這個手感。" : Q.score >= 7 ? "不錯，看一下錯的題目就好。" : Q.score >= 5 ? "及格邊緣，錯題的觀念回文法頁再看一次。" : "沒關係，先看下面的解析，再做一輪。";
   $("#quiz-run").innerHTML = `
     <div class="qcard result">
-      <div class="eyebrow">${{read:"閱讀",listen:"聽力",prep:"介系詞",affix:"字首字尾",word:"單字",sent:"句子",part7:"Part 7 閱讀",colloc:"搭配詞",wrong:"錯題本",saved:"精選",affixgroup: affixGroup ? `${affixGroup[0] === "m" ? "字根" : "字首"} ${(affixGroup[0] === "m" ? ROOTS : PREFIXES)[affixGroup[1]][0]}` : "字首字尾"}[Q.kind]} · 本輪成績</div>
+      <div class="eyebrow">${{read:"閱讀",listen:"聽力",prep:"介系詞",affix:"字首字尾",word:"單字",sent:"句子",part7:"Part 7 閱讀",colloc:"搭配詞",wrong:"錯題本",saved:"精選",gchap: GCHAP[gchap][0],affixgroup: affixGroup ? `${affixGroup[0] === "m" ? "字根" : "字首"} ${(affixGroup[0] === "m" ? ROOTS : PREFIXES)[affixGroup[1]][0]}` : "字首字尾"}[Q.kind]} · 本輪成績</div>
       <div class="score">${Q.score}<span style="font-size:24px;color:var(--muted)"> / ${total}</span></div>
       <p>${msg}</p>
       <div class="btnrow" style="justify-content:center">
@@ -2237,7 +2247,7 @@ function result(){
       </div>`).join("")}</div>` : ""}`;
   const kind = Q.kind;
   bindStars($("#quiz-run"));
-  $("#again").textContent = kind === "saved" ? "再考一次精選" : kind === "wrong" ? "再練一次錯題本" : kind === "part7" ? "再抽 3 篇" : kind === "affixgroup" ? "這組再做一次" : "再抽 10 題";
+  $("#again").textContent = kind === "saved" ? "再考一次精選" : kind === "wrong" ? "再練一次錯題本" : kind === "part7" ? "再抽 3 篇" : kind === "affixgroup" ? "這組再做一次" : kind === "gchap" ? "這章再練一次" : "再抽 10 題";
   $("#again").addEventListener("click", () => {
     if (kind === "saved" && !getSaved().length) return review("saved");
     if (kind === "wrong" && !getWrong().length) return review("wrong");
@@ -2799,6 +2809,16 @@ document.getElementById("colloc-quiz").addEventListener("click", () => { go("qui
   $("#bk-import").addEventListener("click", () => load($("#bk-text").value));
   $("#bk-upload").addEventListener("change", e => { const f = e.target.files[0]; if (f) f.text().then(load); e.target.value = ""; });
 })();
+
+/* 文法章節卡片的練習按鈕 */
+document.querySelectorAll("#tab-grammar section.chap").forEach((sec, i) => {
+  if (!GCHAP[i]) return;
+  const pill = sec.querySelector(".pill"), head = document.createElement("div");
+  head.className = "chaphead"; pill.before(head); head.append(pill);
+  const n = READ.filter((_, k) => inChap(i, k)).length;
+  head.insertAdjacentHTML("beforeend", `<button class="linkbtn" type="button">練習 ${Math.min(10, n)} 題</button>`);
+  head.querySelector("button").addEventListener("click", () => { gchap = i; go("quiz"); start("gchap"); });
+});
 
 if ("serviceWorker" in navigator && window.isSecureContext) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
