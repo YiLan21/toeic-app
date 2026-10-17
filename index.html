@@ -253,6 +253,12 @@ section.block.chap{border-left:4px solid var(--accent);border-radius:16px}
 .dl b{color:var(--accent)}
 .dl small{color:var(--muted);font-size:13.5px}
 .qtimer{font-family:var(--f-mono);font-size:13px;font-weight:500;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:2px 9px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:22px}
+.chhead h2{margin:0}
+.chclock{display:flex;flex-direction:column;align-items:center;gap:2px;flex:none}
+.chclock .timer{font-size:22px}
+.chclock small{font-size:11.5px;color:var(--muted)}
+.tip.pace::before{content:"節奏 "}
 .qtimer.low{background:var(--bad);color:var(--surface)}
 .switch{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;cursor:pointer;margin:4px 0}
 .switch input{width:20px;height:20px;margin-top:1px;flex:none;accent-color:var(--accent)}
@@ -1103,6 +1109,30 @@ const READ = [
  ["Employees must fill ___ the form before the deadline.",["up","out","off","over"],1,"fill out 填寫表格。"],
  ["The elevator is ___ order, so please use the stairs.",["out of","in","on","under"],0,"out of order 故障。"],
  ["The manager will be out of the office; ___, please contact his assistant.",["therefore","although","unless","because"],0,"前後是因果關係，用 therefore（因此）。"],
+ ["The marketing team will ___ the results of the survey at Friday's meeting.",["present","presentation","presentable","presently"],0,"will 後面接原形動詞。present 在這裡是動詞「發表、報告」。"],
+ ["Customers who wish to return an item must present the original ___.",["receive","receipt","receiver","receptive"],1,"形容詞 original 後面要名詞。receipt 是「收據」。"],
+ ["The new software allows employees ___ their schedules online.",["manage","managing","to manage","managed"],2,"allow + 人 + to + 原形：允許某人做某事。"],
+ ["Mr. Garcia has been with the company ___ it was founded in 2005.",["since","for","during","while"],0,"since + 子句（起點），主要子句用現在完成。"],
+ ["If the shipment ___ late, we will contact the customer immediately.",["arrives","will arrive","arrived","arriving"],0,"If 引導的條件子句用現在式代替未來式。"],
+ ["Please review the contract ___ before signing it.",["thorough","thoroughly","thoroughness","more thorough"],1,"修飾動詞 review，用副詞 thoroughly（徹底地、仔細地）。"],
+ ["The seminar was canceled ___ a lack of participants.",["because","because of","although","even though"],1,"a lack of participants 是名詞，用介系詞 because of（因為）。"],
+ ["The new branch office ___ in Kaohsiung last month.",["opens","will open","opened","has opened"],2,"last month 用過去式。"],
+ ["Ms. Ito is the manager ___ team won the sales award.",["who","whose","which","whom"],1,"空格後面是名詞 team，表示「她的團隊」，用所有格關係代名詞 whose。"],
+ ["All applications must be submitted ___ March 31.",["by","until","in","at"],0,"截止期限用 by（在…之前）。"],
+ ["Both the sales team ___ the marketing team attended the workshop.",["or","nor","and","but"],2,"both A and B：A 和 B 都。"],
+ ["The company is looking for an ___ accountant to join its finance department.",["experience","experienced","experiencing","experiences"],1,"名詞 accountant 前面放形容詞 experienced（有經驗的）。"],
+ ["We regret ___ you that the event has been postponed.",["inform","to inform","informing","informed"],1,"regret to + 原形：很遺憾要告知（正式通知常用）。regret Ving 是「後悔做過某事」。"],
+ ["The factory has increased production ___ meet the growing demand.",["in order to","so that","because","due to"],0,"後面是原形動詞 meet，用 in order to（為了）。so that 後面要接句子。"],
+ ["Each department manager ___ responsible for the annual budget.",["is","are","be","being"],0,"Each + 單數名詞，動詞用單數 is。be responsible for：負責…。"],
+ ["The hotel offers free shuttle service to the airport for ___ guests.",["its","it's","it","itself"],0,"名詞 guests 前面用所有格 its（它的）。it's 是 it is 的縮寫。"],
+ ["Mr. Brown will be on vacation ___ Monday to Friday next week.",["from","since","at","by"],0,"from A to B：從 A 到 B。"],
+ ["The survey results were ___ than we had expected.",["good","better","best","well"],1,"有 than 用比較級，good 的比較級是 better。"],
+ ["Visitors are asked to sign in at the front desk ___ entering the building.",["before","during","until","since"],0,"before + Ving：在做某事之前。"],
+ ["The manager was impressed by the ___ of the new intern.",["create","creative","creativity","creatively"],2,"the ___ of 中間要名詞，creativity 是「創造力」。"],
+ ["Our office will be closed ___ the holiday weekend.",["during","while","when","although"],0,"the holiday weekend 是名詞，用介系詞 during。"],
+ ["Ms. Kim avoided ___ the same mistake again.",["make","to make","making","made"],2,"avoid（避免）後接 Ving。"],
+ ["The documents ___ to all board members yesterday.",["send","sent","were sent","have sent"],2,"文件是被寄出，加上 yesterday，用過去被動 were sent。"],
+ ["The new employee seems very ___ about her work.",["enthusiasm","enthusiastic","enthusiastically","enthuse"],1,"seem 是連綴動詞，後面接形容詞 enthusiastic（熱情的）。"],
 ];
 
 const LISTEN = [
@@ -1384,7 +1414,31 @@ const ROPT = [
  ["形容詞「強制的」✓", "名詞／動詞「命令、授權」", "副詞「強制地」", "Ving"],
  ["fill up「裝滿」", "fill out「填寫（表格）」✓", "fill off：不是常用片語", "fill over：不是常用片語"],
  ["out of order「故障」✓", "in order「整齊、有條理」", "「在…上面」", "「在…下面」"],
- ["副詞「因此」✓", "連接詞「雖然」：語意不對", "連接詞「除非」：語意不對", "連接詞「因為」：不能放在分號後加逗號"]
+ ["副詞「因此」✓", "連接詞「雖然」：語意不對", "連接詞「除非」：語意不對", "連接詞「因為」：不能放在分號後加逗號"],
+ ["原形動詞「發表、報告」✓", "名詞「簡報」：will 後面要動詞", "形容詞「體面的」", "副詞「目前」"],
+ ["動詞「收到」", "名詞「收據」✓", "名詞「接收者」：語意不對", "形容詞「樂於接受的」"],
+ ["原形：allow 人 後面要加 to", "Ving：allow 人 後面不接 Ving", "to + 原形 ✓", "過去式／過去分詞"],
+ ["「自從」✓ 後面可接句子", "「長達」＋一段時間：不能接句子", "介系詞「在…期間」：不能接句子", "連接詞「當…的時候」：語意不對"],
+ ["現在式 ✓ 條件子句用現在代替未來", "未來式：If 子句裡不用 will", "過去式：主要子句是 will，時間不對", "Ving：少了 be 動詞，不能當動詞"],
+ ["形容詞「徹底的」：不能修飾動詞", "副詞「徹底地」✓", "名詞「徹底」", "比較級形容詞「更徹底的」"],
+ ["連接詞「因為」：要接句子", "介系詞「因為」✓ 後接名詞", "連接詞「雖然」：語意不對，也要接句子", "連接詞「即使」：語意不對，也要接句子"],
+ ["現在式：時間是 last month", "未來式：時間是 last month", "過去式 ✓", "現在完成：不能配 last month"],
+ ["指「人」當主詞：後面要直接接動詞", "所有格「…的」✓", "指「物」", "指「人」當受詞"],
+ ["「在…之前」表期限 ✓", "「一直到…」表持續：不配 submit", "月、年用 in", "時刻用 at"],
+ ["「或」：搭配 either", "「也不」：搭配 neither", "「和」✓ 搭配 both", "「但是」：搭配 not only"],
+ ["名詞「經驗」", "形容詞「有經驗的」✓", "Ving「正在經歷的」：語意不對", "名詞複數／動詞第三人稱單數"],
+ ["原形：regret 後面要加 to", "to + 原形 ✓", "Ving：regret Ving 是「後悔做過」，語意不對", "過去式／過去分詞"],
+ ["「為了」✓ 後接原形動詞", "「以便」：後面要接完整句子", "連接詞「因為」：語意不對", "介系詞「由於」：後面要接名詞"],
+ ["單數 be 動詞 ✓", "複數 be 動詞：Each 是單數", "原形：主詞後面要變化", "Ving：句子會沒有動詞"],
+ ["所有格「它的」✓", "it is 的縮寫：不能放在名詞前", "主格或受格「它」", "反身代名詞「它自己」"],
+ ["from A to B「從…到…」✓", "「自從」：要配現在完成，也不搭配 to", "時刻用 at", "「在…之前」表期限"],
+ ["原級「好的」", "比較級「更好」✓", "最高級「最好的」", "副詞「很好地」"],
+ ["「在…之前」✓ 可接 Ving", "「在…期間」：後接名詞，不接 Ving", "「一直到…」：語意不對", "「自從」：語意不對"],
+ ["動詞「創造」", "形容詞「有創意的」", "名詞「創造力」✓", "副詞「有創意地」"],
+ ["介系詞「在…期間」✓", "連接詞「當…時」：要接句子", "連接詞「當…時」：要接句子", "連接詞「雖然」：語意不對"],
+ ["原形：avoid 後面不接原形", "to + 原形：avoid 後面不接 to V", "動名詞 Ving ✓", "過去式／過去分詞"],
+ ["原形：主詞後面要變化", "過去式主動：文件不會自己寄", "過去被動「被寄出」✓", "現在完成主動：語態錯，也不配 yesterday"],
+ ["名詞「熱情」", "形容詞「熱情的」✓", "副詞「熱情地」：連綴動詞後面不用副詞", "動詞「熱衷」"]
 ];
 
 const RZH = [
@@ -1399,7 +1453,8 @@ const RZH = [
  "供應商昨天確認了訂單。","獲獎的員工將會得到獎金。","我們需要僱用更多員工；然而，預算有限。","公司決定在台南蓋一座新工廠。",
  "價格包含運費和處理費。","每位員工都會收到一張停車證。","研討會因報名人數太少而取消。","簡報結束後，劉小姐可以回答問題。",
  "我想預訂一張四人桌。","專案比預定進度提前完成。","自從我們推出新網站後，銷售額就增加了。","田中先生習慣長時間工作。",
- "這場訓練課程是所有新進員工必須參加的。","員工必須在截止日前填好表格。","電梯故障了，請走樓梯。","經理將不在辦公室；因此，請聯絡他的助理。"
+ "這場訓練課程是所有新進員工必須參加的。","員工必須在截止日前填好表格。","電梯故障了，請走樓梯。","經理將不在辦公室；因此，請聯絡他的助理。",
+ "行銷團隊會在星期五的會議上報告調查結果。","想退貨的顧客必須出示原始收據。","新軟體讓員工可以在線上管理自己的行程。","賈西亞先生從公司 2005 年成立就在這裡工作了。","如果貨物晚到，我們會立刻聯絡客戶。","簽約前請仔細審閱合約。","研討會因為參加人數不足而取消。","新的分公司上個月在高雄開幕。","伊藤小姐就是團隊贏得業績獎的那位經理。","所有申請都必須在 3 月 31 日前提交。","業務團隊和行銷團隊都參加了研習。","公司正在找一位有經驗的會計加入財務部。","很遺憾通知您，活動已經延期。","工廠提高產量，以滿足日益增加的需求。","每位部門經理都要負責年度預算。","飯店為房客提供免費機場接駁服務。","布朗先生下週一到週五休假。","調查結果比我們預期的好。","訪客進入大樓前，請先在櫃檯登記。","經理對新實習生的創造力印象深刻。","連假週末期間辦公室將不營業。","金小姐避免再犯同樣的錯誤。","文件昨天已經寄給所有董事了。","新員工似乎對工作很有熱忱。"
 ];
 const LZH = [
  ["貨物什麼時候到？",["星期四下午之前。","在倉庫。","是的，我寄了。"]],
@@ -1981,7 +2036,7 @@ function makeAffixWordQ(id){
   return { id, type:`${label} · 中翻英`, stem: a.cur.zh, opts: all.map(x => x.w), otr: all.map(x => x.zh), ans: all.indexOf(a.cur), ex, zhq:true };
 }
 /* 文法章節卡片練習：每章對應的考點（RTAG 字母）或 READ 題號，順序同文法頁的章節卡片 */
-const GCHAP = [["基礎 · 五大句型", ["W"]], ["重點 1 · to V / Ving", ["V"]], ["重點 2 · 時態與主詞動詞一致", ["T","S"]], ["重點 3 · 連接詞 vs 介系詞", ["C"]], ["重點 4 · 詞性判斷", ["W"]], ["重點 5 · 代名詞與時間介系詞", [28, 29, 33, 5, 14, 19, 4]]];
+const GCHAP = [["基礎 · 五大句型", ["W"]], ["重點 1 · to V / Ving", ["V"]], ["重點 2 · 時態與主詞動詞一致", ["T","S"]], ["重點 3 · 連接詞 vs 介系詞", ["C"]], ["重點 4 · 詞性判斷", ["W"]], ["重點 5 · 代名詞與時間介系詞", [28, 29, 33, 5, 14, 19, 4, 56, 57, 63, 64]]];
 const inChap = (i, n) => GCHAP[i][1].some(x => typeof x === "number" ? x === n : RTAG[n] === x);
 let gchap = 0;
 function buildGrammarChap(){
@@ -2340,7 +2395,7 @@ function home(){
   showBest(); renderStats();
 }
 /* ===== 闖關模式 ===== */
-const RTAG = "VVCWTRTVVCTWWCRTCWWRTRWTWCCVOOOCTOCVSSTWVRTVWRRC".split("");
+const RTAG = "VVCWTRTVVCTWWCRTCWWRTRWTWCCVOOOCTOCVSSTWVRTVWRRCWWVTTWCTORCWVCSOROCWCVTW".split("");
 const CAT = {
   W:{ name:"詞性判斷", tab:"grammar" }, V:{ name:"to V / Ving 動詞形式", tab:"grammar" },
   T:{ name:"時態與時間詞", tab:"grammar" }, C:{ name:"連接詞 vs 介系詞", tab:"grammar" },
@@ -2380,7 +2435,16 @@ function openChallenge(){
 function stopTick(){ if (chTick) { clearInterval(chTick); chTick = null; } }
 function startTick(){
   stopTick();
-  chTick = setInterval(() => { const el = document.getElementById("chtimer"); if (el && CH && CH.stage === "run" && !CH.end) el.textContent = fmt(Date.now() - CH.start); }, 1000);
+  const tick = () => {
+    const el = document.getElementById("chtimer"); if (el && CH && CH.stage === "run" && !CH.end) el.textContent = fmt(Date.now() - CH.start);
+    const q = document.getElementById("chq");
+    if (q && CH && CH.item && !CH.answered) {
+      const left = (limitFor(CH.item) || 20) - Math.floor((Date.now() - CH.shownAt) / 1000);
+      q.textContent = left >= 0 ? `本題 ${left} 秒` : `超時 ${-left} 秒`;
+      q.classList.toggle("low", left <= 5);
+    }
+  };
+  tick(); chTick = setInterval(tick, 250);
 }
 
 function renderChal(){
@@ -2393,8 +2457,9 @@ function renderChal(){
 
 function renderPreview(root){
   root.innerHTML = `
-    <h2>闖關模式 · 考前預習</h2>
+    <div class="chhead"><h2>闖關模式 · 考前預習</h2><div class="chclock"><span class="timer">00:00</span><small>按開始才計時</small></div></div>
     <p class="lead">這一輪會考到下面 10 個考點。看完按「開始闖關」，計時從那一刻開始。答錯的題目會一直重出，全部答對才停錶。</p>
+    <p class="tip pace">Part 5 每題約 20 秒，單字、字首字尾約 12 秒。闖關時每題都會倒數，超過就會變紅提醒你。</p>
     <div class="prev">${CH.ids.map((id, i) => `
       <div class="pi"><span class="pn">${i + 1}</span><div class="pb"><span class="tagchip">${esc(CAT[tagOf(id)].name)}</span><div>${esc(pointOf(id))}</div></div></div>`).join("")}
     </div>
@@ -2429,6 +2494,7 @@ function renderRun(root){
   root.innerHTML = `
     <div class="chbar">
       <span class="timer" id="chtimer">${fmt((CH.end || Date.now()) - CH.start)}</span>
+      ${CH.answered ? "" : `<span class="qtimer" id="chq"></span>`}
       <div class="dots" aria-label="過關進度">${dots}</div>
       <span class="qno">${CH.passed.size} / ${CH.ids.length}</span>
     </div>
@@ -2448,6 +2514,7 @@ function renderRun(root){
     </div>`;
   root.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => chAnswer(+b.dataset.k)));
   bindStars(root);
+  if (chTick && !CH.end) startTick();
   $("#ch-next").addEventListener("click", chNext);
   $("#ch-quit").addEventListener("click", () => {
     if (!CH.quitArm) { CH.quitArm = true; return renderChal(); }
@@ -2660,7 +2727,7 @@ function playDialog(di){
 
 /* 每題限時 */
 let qTimerId = null;
-function isTimed(){ return !!store.get("toeic_timed"); }
+function isTimed(){ const v = store.get("toeic_timed"); return v == null ? true : !!v; }
 function limitFor(it){
   if (it.listen || it.dialog != null) return 0;
   if (it.passage != null) return 60;
